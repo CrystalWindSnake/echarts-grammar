@@ -16,6 +16,7 @@ export function handleLineMark(
   const color = mark.color;
   const { facetInfo } = normalizedConfig;
   const { row, column } = mark.facet || {};
+  const seriesOptions = mark.echarts || {};
   const needFacetRow = row !== undefined;
   const needFacetColumn = column !== undefined;
 
@@ -68,6 +69,7 @@ export function handleLineMark(
         );
 
         const series = {
+          ...seriesOptions,
           type: "line",
           showSymbol: false,
           ...labelConfig,

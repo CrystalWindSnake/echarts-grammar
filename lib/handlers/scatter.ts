@@ -16,6 +16,7 @@ export function handleScatterMark(
   const color = mark.color;
   const { facetInfo } = normalizedConfig;
   const { row, column } = mark.facet || {};
+  const seriesOptions = mark.echarts || {};
   const needFacetRow = row !== undefined;
   const needFacetColumn = column !== undefined;
 
@@ -68,6 +69,7 @@ export function handleScatterMark(
         );
 
         const series = {
+          ...seriesOptions,
           type: "scatter",
           ...labelConfig,
           encode: { x, y, ...encodeLabelConfig, ...encodeTooltipConfig },

@@ -314,6 +314,34 @@ describe("charts", () => {
   });
 });
 
+describe("series options", () => {
+  test("should set series options", () => {
+    const config: GrammarConfig = {
+      marks: [
+        {
+          type: "line",
+          data: [
+            { x: "A", y: 10 },
+            { x: "B", y: 20 },
+          ],
+          echarts: {
+            smooth: true,
+          },
+        },
+      ],
+    };
+
+    const { series } = convertToECharts(config) as TResult;
+
+    expect(series).toEqual([
+      expect.objectContaining({
+        type: "line",
+        smooth: true,
+      }),
+    ]);
+  });
+});
+
 describe("test facet", () => {
   test("should chart with facet by row", () => {
     const config: GrammarConfig = {

@@ -13,6 +13,7 @@ export function handleBarMark(
 ) {
   const x = mark.x || "x";
   const y = mark.y || "y";
+  const seriesOptions = mark.echarts || {};
   const { facetInfo } = normalizedConfig;
   const { row, column } = mark.facet || {};
   const needFacetRow = row !== undefined;
@@ -59,6 +60,7 @@ export function handleBarMark(
       );
 
       const series = {
+        ...seriesOptions,
         type: "bar",
         ...labelConfig,
         encode: { x, y, ...encodeLabelConfig, ...encodeTooltipConfig },

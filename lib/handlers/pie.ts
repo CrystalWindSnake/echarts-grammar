@@ -13,6 +13,7 @@ export function handlePieMark(
 ) {
   const { facetInfo } = normalizedConfig;
   const { row, column } = mark.facet || {};
+  const seriesOptions = mark.echarts || {};
   const needFacetRow = row !== undefined;
   const needFacetColumn = column !== undefined;
 
@@ -33,6 +34,7 @@ export function handlePieMark(
       );
 
       const series = {
+        ...seriesOptions,
         type: "pie",
         encode: {
           name: mark.name || "name",
