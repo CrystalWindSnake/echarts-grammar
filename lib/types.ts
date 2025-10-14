@@ -57,7 +57,8 @@ export type MarkConfig =
   | BarMarkConfig
   | LineMarkConfig
   | PieMarkConfig
-  | ScatterMarkConfig;
+  | ScatterMarkConfig
+  | EffectScatterMarkConfig;
 
 export interface BarMarkConfig extends BaseMarkConfig {
   type: "bar";
@@ -85,6 +86,16 @@ export interface PieMarkConfig extends BaseMarkConfig {
 
 export interface ScatterMarkConfig extends BaseMarkConfig {
   type: "scatter";
+  x?: string;
+  y?: string;
+  color?: string;
+  size?: string;
+  label?: string | string[];
+  tooltip?: string | string[];
+}
+
+export interface EffectScatterMarkConfig extends BaseMarkConfig {
+  type: "effect-scatter";
   x?: string;
   y?: string;
   color?: string;

@@ -2,6 +2,7 @@ import { handleBarMark } from "./bar";
 import { handleLineMark } from "./line";
 import { handlePieMark } from "./pie";
 import { handleScatterMark } from "./scatter";
+import { handleEffectScatterMark } from "./effect-scatter";
 import type {
   BarMarkConfig,
   LineMarkConfig,
@@ -9,6 +10,7 @@ import type {
   NormalizedMarkConfig,
   PieMarkConfig,
   ScatterMarkConfig,
+  EffectScatterMarkConfig,
   StrictMarkConfig,
 } from "../types";
 import { type GrammarToEchartsConverter } from "../grammar-to-echarts-tools";
@@ -40,6 +42,13 @@ export function processMark(
     case "scatter":
       return handleScatterMark(
         mark as NormalizedMarkConfig<ScatterMarkConfig>,
+        normalizedConfig,
+        echartsConverter
+      );
+
+    case "effect-scatter":
+      return handleEffectScatterMark(
+        mark as NormalizedMarkConfig<EffectScatterMarkConfig>,
         normalizedConfig,
         echartsConverter
       );

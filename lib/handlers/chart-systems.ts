@@ -10,6 +10,7 @@ export function* iterValuesByColor(
   }
 
   const colorIndex = data.dimensions.indexOf(color);
+  if (colorIndex === -1) throw new Error(`Invalid color field: ${color}`);
   const valueSet = new Set();
   for (const row of data.source) {
     const colorValue = row[colorIndex];

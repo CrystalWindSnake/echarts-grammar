@@ -237,6 +237,42 @@ describe("charts", () => {
     expect(yAxis).toEqual([expect.objectContaining({ type: "value" })]);
   });
 
+  test("should convert effect scatter chart", () => {
+    const config: GrammarConfig = {
+      marks: [
+        {
+          type: "effect-scatter",
+          x: "x",
+          y: "y",
+          data: [
+            { x: 10, y: 10 },
+            { x: 15, y: 20 },
+            { x: 20, y: 30 },
+          ],
+        },
+      ],
+    };
+
+    const result = convertToECharts(config) as TResult;
+    const { series, xAxis, yAxis } = result;
+
+    // expect series
+    expect(series).toEqual([
+      expect.objectContaining({
+        encode: {
+          x: "x",
+          y: "y",
+        },
+        type: "effectScatter",
+      }),
+    ]);
+
+    // expect xAxis and yAxis
+    expect(xAxis).toEqual([expect.objectContaining({ type: "value" })]);
+
+    expect(yAxis).toEqual([expect.objectContaining({ type: "value" })]);
+  });
+
   test("should convert scatter chart by color", () => {
     const config: GrammarConfig = {
       marks: [
@@ -578,6 +614,22 @@ describe("test facet", () => {
         type: "value",
       }),
     ]);
+  });
+});
+
+describe("raise error on invalid config", () => {
+  test("should raise error on invalid color", () => {
+    const config: GrammarConfig = {
+      marks: [
+        {
+          type: "scatter",
+          color: "catx",
+          data: [{ x: 10, y: 10, cat: "X1" }],
+        },
+      ],
+    };
+
+    expect(() => convertToECharts(config)).toThrowError(/Invalid color .*catx/);
   });
 });
 
