@@ -8,10 +8,23 @@ import {
 import { processMark } from "@/handlers";
 import { GrammarToEchartsConverter } from "@/grammar-to-echarts-tools";
 import * as consts from "@/consts";
+import * as echartsSystems from "@/systems/echarts-systems";
 
 const defaultEChartsOptions: EChartsOption = {
   tooltip: {
     trigger: "axis",
+  },
+  xAxis: {
+    axisLine: {
+      show: false,
+      onZero: false,
+    },
+  },
+  yAxis: {
+    axisLine: {
+      show: false,
+      onZero: false,
+    },
   },
 };
 
@@ -25,11 +38,12 @@ export function convertToECharts(config: GrammarConfig): EChartsOption {
     processMark(mark, normalizedConfig, echartsConverter)
   );
 
-  return {
-    ...defaultEChartsOptions,
-    ...echartsConverter.toEChartsOption(),
-    ...config.echartsOptions,
-  };
+  const baseOptions = echartsSystems.mergeEChartsOptions(
+    echartsConverter.toEChartsOption(),
+    defaultEChartsOptions
+  );
+
+  return echartsSystems.mergeEChartsOptions(baseOptions, config.echartsOptions);
 }
 
 function normalizeGrammarConfig(

@@ -14,11 +14,35 @@ export function handleScatterMark(
   const x = mark.x || "x";
   const y = mark.y || "y";
   const color = mark.color;
+  const size = mark.size;
   const { facetInfo } = normalizedConfig;
   const { row, column } = mark.facet || {};
   const seriesOptions = mark.echarts || {};
   const needFacetRow = row !== undefined;
   const needFacetColumn = column !== undefined;
+
+  const colorType = color
+    ? chartSystems.useFieldType({
+        dataset: mark.data,
+        field: color,
+      })
+    : undefined;
+
+  const colorValuesRange = color
+    ? chartSystems.getValuesRange({
+        dataset: mark.data,
+        field: color,
+      })
+    : undefined;
+
+  const xType = chartSystems.useFieldType({
+    dataset: mark.data,
+    field: x,
+  });
+  const yType = chartSystems.useFieldType({
+    dataset: mark.data,
+    field: y,
+  });
 
   facetInfo.rowValues.forEach((rowValue) => {
     facetInfo.columnValues.forEach((columnValue) => {
@@ -28,17 +52,18 @@ export function handleScatterMark(
       });
 
       const xAxisId = axes.fillXAxisConfig({
-        config: { type: "value" },
+        config: chartSystems.useXAxisBaseConfig({ xType, xField: x }),
         xName: x,
       });
       const yAxisId = axes.fillYAxisConfig({
-        config: { type: "value" },
+        config: chartSystems.useYAxisBaseConfig({ yType, yField: y }),
         yName: y,
       });
 
       for (const colorValue of chartSystems.iterValuesByColor(
         mark.data,
-        color
+        color,
+        colorType
       )) {
         const datasetFilters = [];
 
@@ -50,7 +75,7 @@ export function handleScatterMark(
           datasetFilters.push({ dim: column, value: columnValue });
         }
 
-        if (color) {
+        if (color && colorType === "category") {
           datasetFilters.push({ dim: color, value: colorValue });
         }
 
@@ -69,6 +94,7 @@ export function handleScatterMark(
         );
 
         const series = {
+          name: chartSystems.useSeriesName({ colorField: color, colorValue }),
           ...seriesOptions,
           type: "scatter",
           ...labelConfig,
@@ -81,7 +107,33 @@ export function handleScatterMark(
           yAxisId,
         };
 
-        echartsConverter.addSeries(series);
+        const seriesId = echartsConverter.addSeries(series);
+
+        if (size) {
+          echartsConverter.addVisualMap({
+            show: false,
+            type: "continuous",
+            seriesId,
+            dimension: size,
+            inRange: {
+              symbolSize: [10, 100],
+            },
+          });
+        }
+
+        if (color && colorType === "value") {
+          echartsConverter.addVisualMap({
+            show: false,
+            type: "continuous",
+            min: colorValuesRange![0],
+            max: colorValuesRange![1],
+            seriesId,
+            dimension: color,
+            inRange: {
+              color: ["#053061", "#f4eeeb", "#67001f"],
+            },
+          });
+        }
       }
     });
   });

@@ -21,8 +21,21 @@ export function handleEffectScatterMark(
   const needFacetRow = row !== undefined;
   const needFacetColumn = column !== undefined;
 
-  const symbolSizeFn = (value: any[], params: any) =>
-    params.encode.size ? value[params.encode.size[0]] : 10;
+  const colorType = color
+    ? chartSystems.useFieldType({
+        dataset: mark.data,
+        field: color,
+      })
+    : undefined;
+
+  const xType = chartSystems.useFieldType({
+    dataset: mark.data,
+    field: x,
+  });
+  const yType = chartSystems.useFieldType({
+    dataset: mark.data,
+    field: y,
+  });
 
   facetInfo.rowValues.forEach((rowValue) => {
     facetInfo.columnValues.forEach((columnValue) => {
@@ -32,17 +45,18 @@ export function handleEffectScatterMark(
       });
 
       const xAxisId = axes.fillXAxisConfig({
-        config: { type: "value" },
+        config: chartSystems.useXAxisBaseConfig({ xType, xField: x }),
         xName: x,
       });
       const yAxisId = axes.fillYAxisConfig({
-        config: { type: "value" },
+        config: chartSystems.useYAxisBaseConfig({ yType, yField: y }),
         yName: y,
       });
 
       for (const colorValue of chartSystems.iterValuesByColor(
         mark.data,
-        color
+        color,
+        colorType
       )) {
         const datasetFilters = [];
 
@@ -54,7 +68,7 @@ export function handleEffectScatterMark(
           datasetFilters.push({ dim: column, value: columnValue });
         }
 
-        if (color) {
+        if (color && colorType === "category") {
           datasetFilters.push({ dim: color, value: colorValue });
         }
 
@@ -73,11 +87,11 @@ export function handleEffectScatterMark(
         );
 
         const series = {
-          symbolSize: symbolSizeFn,
+          name: chartSystems.useSeriesName({ colorField: color, colorValue }),
           ...seriesOptions,
           type: "effectScatter",
           ...labelConfig,
-          encode: { x, y, size, ...encodeLabelConfig, ...encodeTooltipConfig },
+          encode: { x, y, ...encodeLabelConfig, ...encodeTooltipConfig },
           datasetId: echartsConverter.datasetManager.getDatasetId({
             data: mark.data,
             filters: datasetFilters,
@@ -86,7 +100,19 @@ export function handleEffectScatterMark(
           yAxisId,
         };
 
-        echartsConverter.addSeries(series);
+        const seriesId = echartsConverter.addSeries(series);
+
+        if (size) {
+          echartsConverter.addVisualMap({
+            show: false,
+            type: "continuous",
+            seriesId,
+            dimension: size,
+            inRange: {
+              symbolSize: [10, 100],
+            },
+          });
+        }
       }
     });
   });

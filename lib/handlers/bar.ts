@@ -27,11 +27,14 @@ export function handleBarMark(
       });
 
       const xAxisId = axes.fillXAxisConfig({
-        config: { type: "category" },
+        config: chartSystems.useXAxisBaseConfig({
+          xType: "category",
+          xField: x,
+        }),
         xName: x,
       });
       const yAxisId = axes.fillYAxisConfig({
-        config: { type: "value" },
+        config: chartSystems.useYAxisBaseConfig({ yType: "value", yField: y }),
         yName: y,
       });
 

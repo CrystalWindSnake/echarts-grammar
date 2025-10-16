@@ -28,6 +28,7 @@ interface TMatrix {
 
 export class GrammarToEchartsConverter {
   private series: Record<string, any>[] = [];
+  private visualMap: Record<string, any>[] = [];
   public readonly datasetManager: DatasetManager;
   private axesManager: AxesManager;
   private matrix: TMatrix;
@@ -77,7 +78,16 @@ export class GrammarToEchartsConverter {
    * addSeries
    */
   public addSeries(series: Record<string, any>) {
-    this.series.push(series);
+    const seriesId = `series-id-${this.series.length}`;
+    this.series.push({ ...series, id: seriesId });
+    return seriesId;
+  }
+
+  /**
+   * addVisualMap
+   */
+  public addVisualMap(visualMap: Record<string, any>) {
+    this.visualMap.push(visualMap);
   }
 
   public toEChartsOption() {
@@ -93,6 +103,7 @@ export class GrammarToEchartsConverter {
       yAxis: yAxis,
       grid: postProcessedGrid,
       series: this.series,
+      visualMap: this.visualMap,
       matrix: postProcessedMatrix,
       dataset: this.datasetManager.toDatasetOption(),
     };

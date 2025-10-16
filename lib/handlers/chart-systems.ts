@@ -1,10 +1,11 @@
-import { DatasetSourceWithDim } from "@/types";
+import { DatasetSourceWithDim, ColorFieldType } from "@/types";
 
 export function* iterValuesByColor(
   data: DatasetSourceWithDim,
-  color: string | undefined
+  color: string | undefined,
+  colorType: ColorFieldType | undefined
 ) {
-  if (!color) {
+  if (!color || colorType === "value") {
     yield undefined;
     return;
   }
@@ -50,4 +51,67 @@ export function useEncodeTooltip(tooltip: string | string[] | undefined) {
   return {
     encodeTooltipConfig,
   };
+}
+
+export function useFieldType(options: {
+  dataset: DatasetSourceWithDim;
+  field: string;
+}) {
+  const { dataset, field } = options;
+  const index = dataset.dimensions.indexOf(field);
+  if (index === -1) {
+    throw new Error(`Invalid color field: ${field}`);
+  }
+
+  const value = dataset.source[0][index];
+  if (typeof value === "string") {
+    return "category";
+  }
+
+  return "value";
+}
+
+export function getValuesRange(options: {
+  dataset: DatasetSourceWithDim;
+  field: string;
+}) {
+  const { dataset, field } = options;
+  const index = dataset.dimensions.indexOf(field);
+  if (index === -1) {
+    throw new Error(`Invalid color field: ${field}`);
+  }
+
+  const values = dataset.source.map((row) => row[index]);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+
+  return [min, max];
+}
+
+export function useXAxisBaseConfig(options: {
+  xType: "category" | "value";
+  xField: string;
+}) {
+  const { xType, xField } = options;
+  return { type: xType, name: xField + " →" };
+}
+
+export function useYAxisBaseConfig(options: {
+  yType: "category" | "value";
+  yField: string;
+}) {
+  const { yType, yField } = options;
+  return { type: yType, name: "↑ " + yField };
+}
+
+export function useSeriesName(info: {
+  colorField?: string;
+  colorValue: any;
+}): string | undefined {
+  const { colorField, colorValue } = info;
+
+  if (!colorField) {
+    return undefined;
+  }
+  return colorValue;
 }

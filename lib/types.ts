@@ -11,6 +11,10 @@ type RequireData<T extends { data?: any }> = Omit<T, "data"> & {
   data: DatasetSourceWithDim;
 };
 
+export type ColorFieldType = "category" | "value";
+export type XFieldType = "category" | "value";
+export type YFieldType = "category" | "value";
+
 export type NormalizedMarkConfig<T extends BaseMarkConfig> = RequireData<T>;
 
 export type StrictMarkConfig = NormalizedMarkConfig<BaseMarkConfig>;

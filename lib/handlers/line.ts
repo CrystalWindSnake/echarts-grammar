@@ -20,6 +20,13 @@ export function handleLineMark(
   const needFacetRow = row !== undefined;
   const needFacetColumn = column !== undefined;
 
+  const colorType = color
+    ? chartSystems.useFieldType({
+        dataset: mark.data,
+        field: color,
+      })
+    : undefined;
+
   facetInfo.rowValues.forEach((rowValue) => {
     facetInfo.columnValues.forEach((columnValue) => {
       const axes = echartsConverter.getAxes({
@@ -28,17 +35,21 @@ export function handleLineMark(
       });
 
       const xAxisId = axes.fillXAxisConfig({
-        config: { type: "category" },
+        config: chartSystems.useXAxisBaseConfig({
+          xType: "category",
+          xField: x,
+        }),
         xName: x,
       });
       const yAxisId = axes.fillYAxisConfig({
-        config: { type: "value" },
+        config: chartSystems.useYAxisBaseConfig({ yType: "value", yField: y }),
         yName: y,
       });
 
       for (const colorValue of chartSystems.iterValuesByColor(
         mark.data,
-        color
+        color,
+        colorType
       )) {
         const datasetFilters = [];
 
@@ -50,7 +61,7 @@ export function handleLineMark(
           datasetFilters.push({ dim: column, value: columnValue });
         }
 
-        if (color) {
+        if (color && colorType === "category") {
           datasetFilters.push({ dim: color, value: colorValue });
         }
 
