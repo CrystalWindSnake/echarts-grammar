@@ -14,18 +14,6 @@ const defaultEChartsOptions: EChartsOption = {
   tooltip: {
     trigger: "axis",
   },
-  xAxis: {
-    axisLine: {
-      show: false,
-      onZero: false,
-    },
-  },
-  yAxis: {
-    axisLine: {
-      show: false,
-      onZero: false,
-    },
-  },
 };
 
 export function convertToECharts(config: GrammarConfig): EChartsOption {
@@ -61,7 +49,8 @@ function normalizeGrammarConfig(
   };
 
   const normalizedMarks = marks.map((mark) => {
-    const data = mark.data ?? normalizedDefaultData;
+    const data = mark.data ??
+      normalizedDefaultData ?? { dimensions: [], source: [] };
     if (!data) {
       throw new Error("Mark is missing data and no dataset is available");
     }
@@ -71,13 +60,13 @@ function normalizeGrammarConfig(
     const markFacet = mark.facet ?? facet;
     if (facetRecord.row === null) {
       facetRecord.row = markFacet?.row;
-    } else if (facetRecord.row !== markFacet?.row) {
+    } else if (markFacet && facetRecord.row !== markFacet.row) {
       throw new Error("Facet row is not consistent");
     }
 
     if (facetRecord.column === null) {
       facetRecord.column = markFacet?.column;
-    } else if (facetRecord.column !== markFacet?.column) {
+    } else if (markFacet && facetRecord.column !== markFacet?.column) {
       throw new Error("Facet column is not consistent");
     }
 

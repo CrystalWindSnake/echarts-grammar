@@ -62,7 +62,8 @@ export type MarkConfig =
   | LineMarkConfig
   | PieMarkConfig
   | ScatterMarkConfig
-  | EffectScatterMarkConfig;
+  | EffectScatterMarkConfig
+  | RuleMarkConfig;
 
 export interface BarMarkConfig extends BaseMarkConfig {
   type: "bar";
@@ -106,4 +107,23 @@ export interface EffectScatterMarkConfig extends BaseMarkConfig {
   size?: string;
   label?: string | string[];
   tooltip?: string | string[];
+}
+
+export interface RuleMarkConfig extends BaseMarkConfig {
+  type: "rule";
+  rType: "x" | "y";
+  // value: ruleY([0])
+  value?: {
+    value: (number | string)[];
+  };
+  // ruleY(data, y='colA' , x1='colB', x2 = 'colC')
+  // or
+  // ruleX(data, x='colA' , y1='colB', y2 = 'colC')
+  map?: {
+    x1?: string;
+    x2?: string;
+    y1?: string;
+    y2?: string;
+  };
+  lineStyle?: Record<string, any>;
 }

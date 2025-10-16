@@ -5,6 +5,7 @@ import type {
   NormalizedMarkConfig,
 } from "@/types";
 import * as chartSystems from "./chart-systems";
+import { scatterXAxisConfig, scatterYAxisConfig } from "./default-config";
 
 export function handleScatterMark(
   mark: NormalizedMarkConfig<ScatterMarkConfig>,
@@ -52,11 +53,19 @@ export function handleScatterMark(
       });
 
       const xAxisId = axes.fillXAxisConfig({
-        config: chartSystems.useXAxisBaseConfig({ xType, xField: x }),
+        config: chartSystems.useXAxisBaseConfig({
+          xType,
+          xField: x,
+          extendConfig: scatterXAxisConfig,
+        }),
         xName: x,
       });
       const yAxisId = axes.fillYAxisConfig({
-        config: chartSystems.useYAxisBaseConfig({ yType, yField: y }),
+        config: chartSystems.useYAxisBaseConfig({
+          yType,
+          yField: y,
+          extendConfig: scatterYAxisConfig,
+        }),
         yName: y,
       });
 

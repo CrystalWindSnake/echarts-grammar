@@ -164,7 +164,7 @@ class AxesManager {
 
 type TAxis = Record<string, any> & { show: boolean; id: string };
 
-class AxesItem {
+export class AxesItem {
   public readonly xAxis: TAxis[] = [];
   private xAxisNamesIndexMap: Map<string, number> = new Map();
   public readonly yAxis: TAxis[] = [];
@@ -197,6 +197,17 @@ class AxesItem {
 
   private genYAxisId() {
     return `g-${this.gridIdNumber}-${this.yAxis.length}`;
+  }
+
+  public getXAxisId() {
+    if (this.xAxis.length === 0) throw new Error("No xAxis");
+
+    return `g-${this.gridIdNumber}-${this.xAxis.length - 1}`;
+  }
+
+  public getYAxisId() {
+    if (this.yAxis.length === 0) throw new Error("No yAxis");
+    return `g-${this.gridIdNumber}-${this.yAxis.length - 1}`;
   }
 
   public fillXAxisConfig(options: {

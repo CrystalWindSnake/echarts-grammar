@@ -633,105 +633,199 @@ describe("raise error on invalid config", () => {
   });
 });
 
-describe("testing", () => {
-  test("anying", () => {
+describe("rule mark", () => {
+  test("should convert rule X mark", () => {
     const config: GrammarConfig = {
+      data: [
+        { x: 5, y: 10 },
+        { x: 10, y: 20 },
+      ],
       marks: [
         {
-          type: "line",
-          // label: "cat",
-          tooltip: ["cat", "x", "y"],
-          x: "cat",
-          y: "y",
-          data: [
-            { x: 10, y: 10, cat: "X1" },
-            { x: 20, y: 20, cat: "X2" },
-            { x: 15, y: 15, cat: "Y1" },
-            { x: 25, y: 25, cat: "Y2" },
-          ],
+          type: "scatter",
+        },
+        {
+          type: "rule",
+          rType: "x",
+          value: { value: [0] },
         },
       ],
     };
 
     const result = convertToECharts(config) as TResult;
-    expect(result).toMatchInlineSnapshot(`
-      {
-        "dataset": [
-          {
-            "dimensions": [
-              "x",
-              "y",
-              "cat",
-            ],
-            "id": "ds0",
-            "source": [
-              [
-                10,
-                10,
-                "X1",
-              ],
-              [
-                20,
-                20,
-                "X2",
-              ],
-              [
-                15,
-                15,
-                "Y1",
-              ],
-              [
-                25,
-                25,
-                "Y2",
-              ],
-            ],
-          },
-        ],
-        "grid": [
-          {
-            "id": "gid-0",
-          },
-        ],
-        "matrix": undefined,
-        "series": [
-          {
-            "datasetId": "ds0",
-            "encode": {
-              "tooltip": [
-                "cat",
-                "x",
-                "y",
-              ],
-              "x": "cat",
-              "y": "y",
+    const { series } = result;
+
+    // expect series
+    expect(series).toEqual([
+      expect.any(Object),
+
+      expect.objectContaining({
+        data: [],
+        markLine: expect.objectContaining({
+          symbol: "none",
+          data: [
+            {
+              xAxis: 0,
             },
-            "showSymbol": false,
-            "type": "line",
-            "xAxisId": "g-0-0",
-            "yAxisId": "g-0-0",
-          },
-        ],
-        "tooltip": {
-          "trigger": "axis",
+          ],
+        }),
+        type: "line",
+        xAxisId: "g-0-0",
+        yAxisId: "g-0-0",
+      }),
+    ]);
+  });
+
+  test("should convert rule Y mark", () => {
+    const config: GrammarConfig = {
+      data: [
+        { x: 5, y: 10 },
+        { x: 10, y: 20 },
+      ],
+      marks: [
+        {
+          type: "scatter",
         },
-        "xAxis": [
-          {
-            "gridId": "gid-0",
-            "id": "g-0-0",
-            "show": true,
-            "type": "category",
-          },
-        ],
-        "yAxis": [
-          {
-            "gridId": "gid-0",
-            "id": "g-0-0",
-            "show": true,
-            "type": "value",
-          },
-        ],
-      }
-    `);
+        {
+          type: "rule",
+          rType: "y",
+          value: { value: [0] },
+        },
+      ],
+    };
+
+    const result = convertToECharts(config) as TResult;
+    const { series } = result;
+
+    // expect series
+    expect(series).toEqual([
+      expect.any(Object),
+
+      expect.objectContaining({
+        data: [],
+        markLine: expect.objectContaining({
+          symbol: "none",
+          data: [
+            {
+              yAxis: 0,
+            },
+          ],
+        }),
+        type: "line",
+        xAxisId: "g-0-0",
+        yAxisId: "g-0-0",
+      }),
+    ]);
+  });
+
+  test("should convert multiple lines", () => {
+    const config: GrammarConfig = {
+      data: [
+        { x: 5, y: 10 },
+        { x: 10, y: 20 },
+      ],
+      marks: [
+        {
+          type: "scatter",
+        },
+        {
+          type: "rule",
+          rType: "x",
+          value: { value: [0, 1] },
+        },
+      ],
+    };
+
+    const result = convertToECharts(config) as TResult;
+    const { series } = result;
+
+    // expect series
+    expect(series).toEqual([
+      expect.any(Object),
+
+      expect.objectContaining({
+        data: [],
+        markLine: expect.objectContaining({
+          symbol: "none",
+          data: [
+            {
+              xAxis: 0,
+            },
+            {
+              xAxis: 1,
+            },
+          ],
+        }),
+        type: "line",
+        xAxisId: "g-0-0",
+        yAxisId: "g-0-0",
+      }),
+    ]);
+  });
+
+  test("should convert with facet", () => {
+    const config: GrammarConfig = {
+      data: [
+        { x: 5, y: 10, color: "c1" },
+        { x: 10, y: 20, color: "c1" },
+
+        { x: 1, y: 2, color: "c2" },
+        { x: 15, y: 30, color: "c2" },
+      ],
+      marks: [
+        {
+          type: "scatter",
+          facet: { row: "color" },
+        },
+        {
+          type: "rule",
+          rType: "x",
+          value: { value: [0] },
+        },
+      ],
+    };
+
+    const result = convertToECharts(config) as TResult;
+    const { series, xAxis, yAxis } = result;
+
+    expect(series).toHaveLength(4);
+    expect(xAxis).toHaveLength(2);
+    expect(yAxis).toHaveLength(2);
+
+    const lineSeries = series.filter((s) => s.type === "line");
+    expect(lineSeries).toHaveLength(2);
+
+    expect(lineSeries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          data: [],
+          markLine: expect.objectContaining({
+            symbol: "none",
+            data: [
+              {
+                xAxis: 0,
+              },
+            ],
+          }),
+          type: "line",
+          xAxisId: xAxis[0].id,
+          yAxisId: yAxis[0].id,
+        }),
+        expect.objectContaining({
+          data: [],
+          markLine: expect.objectContaining({
+            symbol: "none",
+            data: [
+              {
+                xAxis: 0,
+              },
+            ],
+          }),
+          type: "line",
+          xAxisId: xAxis[1].id,
+          yAxisId: yAxis[1].id,
+        }),
+      ])
+    );
   });
 });

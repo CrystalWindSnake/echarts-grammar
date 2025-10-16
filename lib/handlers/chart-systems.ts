@@ -1,4 +1,4 @@
-import { DatasetSourceWithDim, ColorFieldType } from "@/types";
+import { DatasetSourceWithDim, ColorFieldType, FacetConfig } from "@/types";
 
 export function* iterValuesByColor(
   data: DatasetSourceWithDim,
@@ -91,17 +91,19 @@ export function getValuesRange(options: {
 export function useXAxisBaseConfig(options: {
   xType: "category" | "value";
   xField: string;
+  extendConfig?: Record<string, any>;
 }) {
-  const { xType, xField } = options;
-  return { type: xType, name: xField + " →" };
+  const { xType, xField, extendConfig } = options;
+  return { ...extendConfig, type: xType, name: xField + " →" };
 }
 
 export function useYAxisBaseConfig(options: {
   yType: "category" | "value";
   yField: string;
+  extendConfig?: Record<string, any>;
 }) {
-  const { yType, yField } = options;
-  return { type: yType, name: "↑ " + yField };
+  const { yType, yField, extendConfig } = options;
+  return { ...extendConfig, type: yType, name: "↑ " + yField };
 }
 
 export function useSeriesName(info: {
@@ -114,4 +116,53 @@ export function useSeriesName(info: {
     return undefined;
   }
   return colorValue;
+}
+
+export class DatasetWrapper {
+  constructor(public readonly dataset: DatasetSourceWithDim) {}
+
+  public filterWithFacet(options: {
+    facetConfig: FacetConfig;
+    rowValue: string | undefined;
+    columnValue: string | undefined;
+  }): DatasetWrapper {
+    const { facetConfig, rowValue, columnValue } = options;
+    const dimensions = this.dataset.dimensions;
+    const source = this.dataset.source;
+    const { row, column } = facetConfig;
+    const rowIndex = row ? dimensions.indexOf(row) : -1;
+    const columnIndex = column ? dimensions.indexOf(column) : -1;
+
+    const data =
+      rowIndex > -1 || columnIndex > -1
+        ? source.filter((rowData: any[]) => {
+            const matchRow =
+              rowIndex === -1 ||
+              rowValue === undefined ||
+              rowData[rowIndex] === rowValue;
+
+            const matchColumn =
+              columnIndex === -1 ||
+              columnValue === undefined ||
+              rowData[columnIndex] === columnValue;
+
+            return matchRow && matchColumn;
+          })
+        : source;
+
+    const newDataset = {
+      source: data,
+      dimensions,
+    };
+
+    return new DatasetWrapper(newDataset);
+  }
+
+  public getValues(field: string) {
+    const index = this.dataset.dimensions.indexOf(field);
+    if (index === -1) {
+      throw new Error(`Invalid field: ${field}`);
+    }
+    return this.dataset.source.map((row) => row[index]);
+  }
 }

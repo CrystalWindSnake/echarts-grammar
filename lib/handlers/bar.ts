@@ -5,6 +5,10 @@ import type {
   NormalizedMarkConfig,
 } from "../types";
 import * as chartSystems from "./chart-systems";
+import {
+  cartesian2dXAxisConfig,
+  cartesian2dYAxisConfig,
+} from "./default-config";
 
 export function handleBarMark(
   mark: NormalizedMarkConfig<BarMarkConfig>,
@@ -30,11 +34,16 @@ export function handleBarMark(
         config: chartSystems.useXAxisBaseConfig({
           xType: "category",
           xField: x,
+          extendConfig: cartesian2dXAxisConfig,
         }),
         xName: x,
       });
       const yAxisId = axes.fillYAxisConfig({
-        config: chartSystems.useYAxisBaseConfig({ yType: "value", yField: y }),
+        config: chartSystems.useYAxisBaseConfig({
+          yType: "value",
+          yField: y,
+          extendConfig: cartesian2dYAxisConfig,
+        }),
         yName: y,
       });
 
