@@ -9,6 +9,7 @@ import { processMark } from "@/handlers";
 import { GrammarToEchartsConverter } from "@/grammar-to-echarts-tools";
 import * as consts from "@/consts";
 import * as echartsSystems from "@/systems/echarts-systems";
+import * as objectSystems from "@/systems/object-systems";
 
 const defaultEChartsOptions: EChartsOption = {
   tooltip: {
@@ -17,7 +18,12 @@ const defaultEChartsOptions: EChartsOption = {
 };
 
 export function convertToECharts(config: GrammarConfig): EChartsOption {
-  const normalizedConfig = normalizeGrammarConfig(config);
+  const [normalizedConfig, allMarkHasData] = normalizeGrammarConfig(config);
+
+  if (!allMarkHasData) {
+    return {};
+  }
+
   const { marks } = normalizedConfig;
 
   const echartsConverter = new GrammarToEchartsConverter(normalizedConfig);
@@ -36,8 +42,9 @@ export function convertToECharts(config: GrammarConfig): EChartsOption {
 
 function normalizeGrammarConfig(
   config: GrammarConfig
-): NormalizedGrammarConfig {
+): [NormalizedGrammarConfig, boolean] {
   const { data: defaultData, facet, marks, echartsOptions } = config;
+  let allMarkHasData = true;
   const normalizedDefaultData = defaultData
     ? normalizeDatasetSource(defaultData)
     : defaultData;
@@ -56,6 +63,9 @@ function normalizeGrammarConfig(
     }
 
     const normalizedData = normalizeDatasetSource(data);
+    if (normalizedData.source.length === 0) {
+      allMarkHasData = false;
+    }
 
     const markFacet = mark.facet ?? facet;
     if (facetRecord.row === null) {
@@ -104,11 +114,13 @@ function normalizeGrammarConfig(
     }
   }
 
-  return {
+  const resultConfig = {
     facetInfo,
     marks: normalizedMarks,
     echartsOptions,
   };
+
+  return [resultConfig, allMarkHasData];
 }
 
 function normalizeDatasetSource(source: Dataset): DatasetSourceWithDim {
@@ -122,6 +134,8 @@ function normalizeDatasetSource(source: Dataset): DatasetSourceWithDim {
     const dimensions = Object.keys(sourceData[0]);
     const data = sourceData.map((row) => Object.values(row));
     return { dimensions, source: data };
+  } else if (objectSystems.isEmptyObject(sourceData)) {
+    return { dimensions: [], source: [] };
   }
 
   return sourceData;
