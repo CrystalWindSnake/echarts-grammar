@@ -65,12 +65,15 @@ export type MarkConfig =
   | EffectScatterMarkConfig
   | RuleMarkConfig;
 
+export type MarkType = MarkConfig["type"];
+
 export interface BarMarkConfig extends BaseMarkConfig {
   type: "bar";
   x?: string;
   y?: string;
   label?: string | string[];
   tooltip?: string | string[];
+  color?: string;
 }
 
 export interface LineMarkConfig extends BaseMarkConfig {

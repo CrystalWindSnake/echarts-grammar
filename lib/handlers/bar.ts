@@ -17,11 +17,19 @@ export function handleBarMark(
 ) {
   const x = mark.x || "x";
   const y = mark.y || "y";
+  const color = mark.color;
   const seriesOptions = mark.echarts || {};
   const { facetInfo } = normalizedConfig;
   const { row, column } = mark.facet || {};
   const needFacetRow = row !== undefined;
   const needFacetColumn = column !== undefined;
+
+  const colorType = color
+    ? chartSystems.useFieldType({
+        dataset: mark.data,
+        field: color,
+      })
+    : undefined;
 
   facetInfo.rowValues.forEach((rowValue) => {
     facetInfo.columnValues.forEach((columnValue) => {
@@ -47,44 +55,54 @@ export function handleBarMark(
         yName: y,
       });
 
-      const datasetFilters = [];
+      for (const colorValue of chartSystems.iterValuesByColor(
+        mark.data,
+        color,
+        colorType
+      )) {
+        const datasetFilters = [];
 
-      if (needFacetRow) {
-        datasetFilters.push({ dim: row, value: rowValue });
-      }
-
-      if (needFacetColumn) {
-        datasetFilters.push({ dim: column, value: columnValue });
-      }
-
-      const { labelConfig, encodeLabelConfig } = chartSystems.useEncodeLabel(
-        mark.label,
-        {
-          label: {
-            show: true,
-            position: "insideTop",
-          },
+        if (needFacetRow) {
+          datasetFilters.push({ dim: row, value: rowValue });
         }
-      );
 
-      const { encodeTooltipConfig } = chartSystems.useEncodeTooltip(
-        mark.tooltip
-      );
+        if (needFacetColumn) {
+          datasetFilters.push({ dim: column, value: columnValue });
+        }
 
-      const series = {
-        ...seriesOptions,
-        type: "bar",
-        ...labelConfig,
-        encode: { x, y, ...encodeLabelConfig, ...encodeTooltipConfig },
-        datasetId: echartsConverter.datasetManager.getDatasetId({
-          data: mark.data,
-          filters: datasetFilters,
-        }),
-        xAxisId,
-        yAxisId,
-      };
+        if (color && colorType === "category") {
+          datasetFilters.push({ dim: color, value: colorValue });
+        }
 
-      echartsConverter.addSeries(series);
+        const { labelConfig, encodeLabelConfig } = chartSystems.useEncodeLabel(
+          mark.label,
+          {
+            label: {
+              show: true,
+              position: "insideTop",
+            },
+          }
+        );
+
+        const { encodeTooltipConfig } = chartSystems.useEncodeTooltip(
+          mark.tooltip
+        );
+
+        const series = {
+          ...seriesOptions,
+          type: "bar",
+          ...labelConfig,
+          encode: { x, y, ...encodeLabelConfig, ...encodeTooltipConfig },
+          datasetId: echartsConverter.datasetManager.getDatasetId({
+            data: mark.data,
+            filters: datasetFilters,
+          }),
+          xAxisId,
+          yAxisId,
+        };
+
+        echartsConverter.addSeries(series);
+      }
     });
   });
 }

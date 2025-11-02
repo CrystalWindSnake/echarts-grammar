@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { convertToECharts } from "@/converter";
-import { GrammarConfig } from "@/types";
+import { GrammarConfig, MarkType } from "@/types";
 import type { TResult } from "./types";
 import * as consts from "@/consts";
 
@@ -115,59 +115,63 @@ describe("charts", () => {
     ]);
   });
 
-  test("should convert line chart by color", () => {
-    const config: GrammarConfig = {
-      marks: [
-        {
-          type: "line",
-          x: "x",
-          y: "y",
-          color: "color",
-          data: [
-            { x: "A", y: 10, color: "c1" },
-            { x: "B", y: 20, color: "c1" },
-            { x: "A", y: 20, color: "c2" },
-            { x: "B", y: 30, color: "c2" },
-          ],
-        },
-      ],
-    };
-
-    const result = convertToECharts(config) as TResult;
-    const { series, dataset } = result;
-
-    // expect dataset
-    expect(dataset).toEqual([
-      expect.any(Object),
-      expect.objectContaining({
-        transform: expect.objectContaining({
-          config: {
-            and: [
-              {
-                "=": "c1",
-                dimension: "color",
-              },
+  test.for(["line", "bar"] as MarkType[])(
+    "should convert %i chart by color",
+    (markType, { expect }) => {
+      const config: GrammarConfig = {
+        marks: [
+          // @ts-expect-error
+          {
+            type: markType,
+            x: "x",
+            y: "y",
+            color: "color",
+            data: [
+              { x: "A", y: 10, color: "c1" },
+              { x: "B", y: 20, color: "c1" },
+              { x: "A", y: 20, color: "c2" },
+              { x: "B", y: 30, color: "c2" },
             ],
           },
-        }),
-      }),
-      expect.objectContaining({
-        transform: expect.objectContaining({
-          config: {
-            and: [
-              {
-                "=": "c2",
-                dimension: "color",
-              },
-            ],
-          },
-        }),
-      }),
-    ]);
+        ],
+      };
 
-    // expect series
-    expect(series.length).toBe(2);
-  });
+      const result = convertToECharts(config) as TResult;
+      const { series, dataset } = result;
+
+      // expect dataset
+      expect(dataset).toEqual([
+        expect.any(Object),
+        expect.objectContaining({
+          transform: expect.objectContaining({
+            config: {
+              and: [
+                {
+                  "=": "c1",
+                  dimension: "color",
+                },
+              ],
+            },
+          }),
+        }),
+        expect.objectContaining({
+          transform: expect.objectContaining({
+            config: {
+              and: [
+                {
+                  "=": "c2",
+                  dimension: "color",
+                },
+              ],
+            },
+          }),
+        }),
+      ]);
+
+      // expect series
+      expect(series.length).toBe(2);
+    }
+  );
 
   test("should convert pie chart", () => {
     const config: GrammarConfig = {
