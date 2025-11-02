@@ -1,6 +1,6 @@
 {
   "name": "echarts-grammar",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "type": "module",
   "files": [
     "dist"
@@ -16,7 +16,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "build:types": "tsc --emitDeclarationOnly && tsc-alias",
-    "prepublishOnly": "npm run build && npm run build:types"
+    "prepublishOnly": "npm run build && npm run build:types",
+    "publish": "nrm use npm && npm publish && nrm use tencent"
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.12",
