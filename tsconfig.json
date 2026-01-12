@@ -3,7 +3,7 @@
     "baseUrl": "./",
     "paths": {
       "@/*": [
-        "lib/*"
+        "src/*"
       ]
     },
     "target": "es2022",
