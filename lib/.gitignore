@@ -1,3 +1,5 @@
+lib/__tests__/testing.test.ts
+temp/
 
 # Logs
 logs
@@ -23,3 +25,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+tools.md

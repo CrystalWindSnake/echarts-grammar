@@ -1,0 +1,17 @@
+{
+    "name": "playground",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite"
+    },
+    "dependencies": {
+        "echarts-grammar": "workspace:*"
+    },
+    "devDependencies": {
+        "@types/node": "^24.10.8",
+        "echarts": "^6.0.0",
+        "typescript": "~5.9.3",
+        "vite": "^7.3.1"
+    }
+}
