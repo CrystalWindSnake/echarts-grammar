@@ -1,6 +1,6 @@
 import { GrammarConfig } from "@/core/types";
 import { validateConfig } from "@/core/validator";
-import { resetIds } from "@/core/id-generator";
+import { genSeriesId, resetIds } from "@/core/id-generator";
 import { buildDataset } from "./dataset-builder";
 import { buildGrid } from "./grid-builder";
 import { buildAxes } from "./axis-builder";
@@ -14,22 +14,31 @@ export function compile(config: GrammarConfig): any {
   if (config.facet) {
     if (!config.data) throw new Error("facet requires global data");
 
-    const { datasets, cells } = buildMatrix(config);
+    const { datasets, matrix, grids, xAxisArr, yAxisArr, seriesMetas } =
+      buildMatrix(config);
 
-    const series = cells.map((cell) => ({
-      id: cell.seriesId,
-      type: config.marks[0].type,
-      datasetIndex: cell.datasetIndex,
+    const mark = config.marks[0];
+
+    const series = seriesMetas.map((meta) => ({
+      id: genSeriesId(),
+      type: mark.type,
+      datasetId: meta.datasetId,
+      gridId: meta.gridId,
+      xAxisId: meta.axisId,
+      yAxisId: meta.axisId,
       encode: {
-        x: config.marks[0].x,
-        y: config.marks[0].y,
+        x: mark.x,
+        y: mark.y,
       },
     }));
 
     return {
       dataset: datasets,
+      matrix,
+      grid: grids,
+      xAxis: xAxisArr,
+      yAxis: yAxisArr,
       series,
-      matrix: [{ cells }],
       ...(config.echarts || {}),
     };
   }

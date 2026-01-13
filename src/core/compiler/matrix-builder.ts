@@ -1,48 +1,148 @@
 import { GrammarConfig } from "@/core/types";
 import { normalizeDataSource } from "@/data/normalize";
-import { genDatasetId, genSeriesId } from "@/core/id-generator";
-import { buildTransformDataset } from "@/data/slice-transform";
+import { genDatasetId, genGridId } from "@/core/id-generator";
+import { buildFacetTransformDataset } from "@/data/slice-transform";
+import { buildAxes } from "@/core/compiler/axis-builder";
 
-export function buildMatrix(config: GrammarConfig) {
+export interface MatrixSeriesMeta {
+  gridId: string;
+  datasetId: string;
+  axisId: string;
+}
+
+export interface MatrixBuildResult {
+  datasets: any[];
+  matrix: any;
+  grids: any[];
+  xAxisArr: any[];
+  yAxisArr: any[];
+  seriesMetas: MatrixSeriesMeta[];
+}
+
+const DEFAULT_MATRIX_CONFIG = {
+  MATRIX: {
+    backgroundStyle: {
+      borderWidth: 0,
+    },
+    body: {
+      itemStyle: {
+        borderWidth: 0,
+      },
+    },
+  },
+  X: {
+    itemStyle: {
+      borderWidth: 0,
+    },
+    levelSize: 30,
+    show: true,
+  },
+  Y: {
+    itemStyle: {
+      borderWidth: 0,
+    },
+    levelSize: 30,
+    show: false,
+  },
+};
+
+export function buildMatrix(config: GrammarConfig): MatrixBuildResult {
   const rawDS = normalizeDataSource(config.data!);
-  const rawId = genDatasetId();
 
-  const dims = Array.isArray(config.facet!.by)
-    ? config.facet!.by
-    : [config.facet!.by];
+  const colField = config.facet!.col ?? null;
+  const rowField = config.facet!.row ?? null;
+  const is2D = !!(colField && rowField);
 
-  const uniqueValues = (rawDS.rows || []).reduce((acc, row) => {
-    const key = dims.map((d) => row[rawDS.dimensions.indexOf(d)]);
-    acc.add(key.join("|"));
-    return acc;
-  }, new Set<string>());
+  const xField = colField ?? rowField!;
+  const yField = is2D ? rowField : null;
 
-  const cells = [];
-  const datasets: any[] = [
-    { id: rawId, dimensions: rawDS.dimensions, source: rawDS.rows },
-  ];
+  const xIndex = rawDS.dimensions.indexOf(xField);
+  const yIndex = yField ? rawDS.dimensions.indexOf(yField) : -1;
 
-  let dsIndex = 1;
-  for (const combo of Array.from(uniqueValues.values())) {
-    const parts = combo.split("|");
-    const filters = dims.map((d, i) => ({ field: d, value: parts[i] }));
+  const xValues: string[] = [];
+  const yValues: string[] = [];
 
-    // Dataset transform
-    const transformDsId = genDatasetId();
+  const comboSet = new Set<string>(); // 真实存在的组合
 
-    datasets.push(buildTransformDataset(transformDsId, dims[0], parts[0], 0));
+  for (const row of rawDS.rows || []) {
+    const xv = String(row[xIndex]);
+    const yv = yField ? String(row[yIndex]) : "-1";
 
-    // Series
-    const sId = genSeriesId();
-    cells.push({
-      row: 0,
-      col: dsIndex - 1,
-      seriesId: sId,
-      datasetIndex: dsIndex,
-    });
+    if (!xValues.includes(xv)) xValues.push(xv);
+    if (!yValues.includes(yv)) yValues.push(yv);
 
-    dsIndex++;
+    comboSet.add(`${xv}||${yv}`);
   }
 
-  return { datasets, cells };
+  if (yValues.length === 0) yValues.push("-1");
+
+  const matrix = {
+    x: { data: xValues, ...DEFAULT_MATRIX_CONFIG.X },
+    y: { data: yValues, ...DEFAULT_MATRIX_CONFIG.Y },
+    ...DEFAULT_MATRIX_CONFIG.MATRIX,
+  };
+
+  const rawDatasetId = genDatasetId();
+
+  const datasets: any[] = [
+    {
+      id: rawDatasetId,
+      dimensions: rawDS.dimensions,
+      source: rawDS.rows,
+    },
+  ];
+
+  const grids: any[] = [];
+  const xAxisArr: any[] = [];
+  const yAxisArr: any[] = [];
+  const seriesMetas: MatrixSeriesMeta[] = [];
+
+  for (const key of comboSet) {
+    const [xv, yv] = key.split("||");
+
+    // 1. grid
+    const gridId = genGridId();
+
+    grids.push({
+      id: gridId,
+      coordinateSystem: "matrix",
+      coord: [xv, yv],
+    });
+
+    // 2. dataset transform (组合条件)
+    const conditions = [{ field: xField, value: xv }];
+
+    if (is2D) {
+      conditions.push({ field: yField!, value: yv });
+    }
+
+    const dsId = genDatasetId();
+    datasets.push(buildFacetTransformDataset(dsId, conditions, rawDatasetId));
+
+    // 3. axes (复用现有 builder)
+    const { xAxis, yAxis, axisId } = buildAxes(
+      gridId,
+      config.marks[0].x,
+      config.marks[0].y
+    );
+
+    xAxisArr.push(xAxis);
+    yAxisArr.push(yAxis);
+
+    // 4. series meta
+    seriesMetas.push({
+      gridId,
+      datasetId: dsId,
+      axisId,
+    });
+  }
+
+  return {
+    datasets,
+    matrix,
+    grids,
+    xAxisArr,
+    yAxisArr,
+    seriesMetas,
+  };
 }

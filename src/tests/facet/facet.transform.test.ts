@@ -10,7 +10,7 @@ describe("facet - dataset transform correctness", () => {
     ];
     const config: GrammarConfig = {
       data: { type: "object-array", data },
-      facet: { by: "region" },
+      facet: { row: "region" },
       marks: [{ type: "bar", x: "x", y: "y" }],
     };
 
@@ -21,8 +21,12 @@ describe("facet - dataset transform correctness", () => {
     expect(transformDs.transform).toEqual({
       type: "filter",
       config: {
-        dimension: "region",
-        "=": "A",
+        and: [
+          {
+            "=": "A",
+            dimension: "region",
+          },
+        ],
       },
     });
   });

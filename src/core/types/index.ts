@@ -2,6 +2,7 @@ export type Primitive = string | number | boolean | null;
 
 export interface GrammarConfig {
   data?: DataSource;
+  facet?: FacetConfig;
   marks: MarkConfig[];
   echarts?: Record<string, any>;
 }
@@ -39,13 +40,8 @@ export interface DatasetBuildResult {
 }
 
 export interface FacetConfig {
-  by: string | string[];
+  // by: string | string[];
+  row?: string;
+  col?: string;
   order?: "asc" | "desc";
-}
-
-export interface GrammarConfig {
-  data?: DataSource;
-  facet?: FacetConfig;
-  marks: MarkConfig[];
-  echarts?: Record<string, any>;
 }

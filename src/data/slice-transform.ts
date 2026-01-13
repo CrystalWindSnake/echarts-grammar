@@ -1,18 +1,19 @@
-/**
- * 构建 filter transform dataset config
- */
-export function buildTransformDataset(
+export function buildFacetTransformDataset(
   id: string,
-  field: string,
-  value: any,
-  rawIndex: number
+  conditions: Array<{ field: string; value: any }>,
+  fromDatasetId: string
 ) {
   return {
     id,
+    fromDatasetId,
     transform: {
       type: "filter",
-      config: { dimension: field, "=": value },
+      config: {
+        and: conditions.map((c) => ({
+          dimension: c.field,
+          "=": c.value,
+        })),
+      },
     },
-    fromDatasetIndex: rawIndex,
   };
 }
