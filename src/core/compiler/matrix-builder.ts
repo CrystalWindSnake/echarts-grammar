@@ -2,12 +2,11 @@ import { GrammarConfig } from "@/core/types";
 import { normalizeDataSource } from "@/data/normalize";
 import { genDatasetId, genGridId } from "@/core/id-generator";
 import { buildFacetTransformDataset } from "@/data/slice-transform";
-import { buildAxes } from "@/core/compiler/axis-builder";
 
 export interface MatrixSeriesMeta {
   gridId: string;
   datasetId: string;
-  axisId: string;
+  axisId?: string;
 }
 
 export interface MatrixBuildResult {
@@ -119,21 +118,11 @@ export function buildMatrix(config: GrammarConfig): MatrixBuildResult {
     const dsId = genDatasetId();
     datasets.push(buildFacetTransformDataset(dsId, conditions, rawDatasetId));
 
-    // 3. axes (复用现有 builder)
-    const { xAxis, yAxis, axisId } = buildAxes(
-      gridId,
-      config.marks[0].x,
-      config.marks[0].y
-    );
-
-    xAxisArr.push(xAxis);
-    yAxisArr.push(yAxis);
-
     // 4. series meta
     seriesMetas.push({
       gridId,
       datasetId: dsId,
-      axisId,
+      axisId: undefined,
     });
   }
 

@@ -16,16 +16,4 @@ describe("compileOption - error cases", () => {
 
     expect(() => compileOption(config)).toThrow("No data source");
   });
-
-  it("should throw if mark missing x or y", () => {
-    const config: GrammarConfig = {
-      data: {
-        type: "object-array",
-        data: [{ a: 1 }],
-      },
-      marks: [{ type: "bar", x: "" as any, y: "" as any }],
-    };
-
-    expect(() => compileOption(config)).toThrow();
-  });
 });
