@@ -6,12 +6,14 @@ describe("testing", () => {
   it("anying", () => {
     const data = [
       { label: "A", year: 2023, x: "foo", y: 1 },
-      { label: "B", year: 2024, x: "bar", y: 2 },
+      { label: "A", year: 2023, x: "bar", y: 2 },
+      { label: "B", year: 2024, x: "foo", y: 10 },
+      { label: "B", year: 2024, x: "bar", y: 20 },
     ];
     const config: GrammarConfig = {
       data: { type: "object-array", data },
       // facet: { row: "region", col: "year" },
-      marks: [{ type: "bar", x: "x", y: "y", label: "label" }],
+      marks: [{ type: "bar", x: "x", y: "y", color: "label" }],
     };
 
     const option = compileOption(config);
@@ -26,7 +28,7 @@ describe("testing", () => {
               "x",
               "y",
             ],
-            "id": "ds0",
+            "id": "ds_1",
             "source": [
               [
                 "A",
@@ -35,10 +37,68 @@ describe("testing", () => {
                 1,
               ],
               [
+                "A",
+                2023,
+                "bar",
+                2,
+              ],
+              [
+                "B",
+                2024,
+                "foo",
+                10,
+              ],
+              [
                 "B",
                 2024,
                 "bar",
+                20,
+              ],
+            ],
+          },
+          {
+            "dimensions": [
+              "label",
+              "year",
+              "x",
+              "y",
+            ],
+            "id": "ds_2",
+            "source": [
+              [
+                "A",
+                2023,
+                "foo",
+                1,
+              ],
+              [
+                "A",
+                2023,
+                "bar",
                 2,
+              ],
+            ],
+          },
+          {
+            "dimensions": [
+              "label",
+              "year",
+              "x",
+              "y",
+            ],
+            "id": "ds_3",
+            "source": [
+              [
+                "B",
+                2024,
+                "foo",
+                10,
+              ],
+              [
+                "B",
+                2024,
+                "bar",
+                20,
               ],
             ],
           },
@@ -50,17 +110,25 @@ describe("testing", () => {
         ],
         "series": [
           {
-            "datasetId": "ds0",
+            "datasetId": "ds_2",
             "encode": {
-              "label": "label",
               "x": "x",
               "y": "y",
             },
             "id": "series-id-0",
-            "label": {
-              "position": "insideTop",
-              "show": true,
+            "name": "A",
+            "type": "bar",
+            "xAxisId": "g-0-0",
+            "yAxisId": "g-0-0",
+          },
+          {
+            "datasetId": "ds_3",
+            "encode": {
+              "x": "x",
+              "y": "y",
             },
+            "id": "series-id-1",
+            "name": "B",
             "type": "bar",
             "xAxisId": "g-0-0",
             "yAxisId": "g-0-0",

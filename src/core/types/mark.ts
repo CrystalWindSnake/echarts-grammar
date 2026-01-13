@@ -10,6 +10,7 @@ export interface BarMarkConfig extends BaseMarkConfig {
   type: "bar";
   x: string;
   y: string;
+  color?: string;
   tooltip?: string | string[];
   label?: string | string[];
 }
@@ -18,6 +19,7 @@ export interface LineMarkConfig extends BaseMarkConfig {
   type: "line";
   x: string;
   y: string;
+  color?: string;
   tooltip?: string | string[];
   label?: string | string[];
 }

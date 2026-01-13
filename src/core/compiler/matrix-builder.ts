@@ -1,7 +1,6 @@
 import { GrammarConfig } from "@/core/types";
-import { normalizeDataSource } from "@/data/normalize";
-import { genDatasetId, genGridId } from "@/core/id-generator";
-import { buildFacetTransformDataset } from "@/data/slice-transform";
+import { genGridId } from "@/core/id-generator";
+import type { DataPipeline } from "@/pipeline/dataset/pipeline";
 
 export interface MatrixSeriesMeta {
   gridId: string;
@@ -10,7 +9,6 @@ export interface MatrixSeriesMeta {
 }
 
 export interface MatrixBuildResult {
-  datasets: any[];
   matrix: any;
   grids: any[];
   xAxisArr: any[];
@@ -45,8 +43,17 @@ const DEFAULT_MATRIX_CONFIG = {
   },
 };
 
-export function buildMatrix(config: GrammarConfig): MatrixBuildResult {
-  const rawDS = normalizeDataSource(config.data!);
+export interface MatrixCtx {
+  datasetPipeline: DataPipeline;
+}
+
+export function buildMatrix(
+  config: GrammarConfig,
+  ctx: MatrixCtx
+): MatrixBuildResult {
+  const { datasetPipeline } = ctx;
+  const rawDSId = datasetPipeline.createDatasetFromSource(config.data!);
+  const rawDS = datasetPipeline.getDatasetSource(rawDSId);
 
   const colField = config.facet!.col ?? null;
   const rowField = config.facet!.row ?? null;
@@ -61,9 +68,9 @@ export function buildMatrix(config: GrammarConfig): MatrixBuildResult {
   const xValues: string[] = [];
   const yValues: string[] = [];
 
-  const comboSet = new Set<string>(); // 真实存在的组合
+  const comboSet = new Set<string>();
 
-  for (const row of rawDS.rows || []) {
+  for (const row of rawDS.source || []) {
     const xv = String(row[xIndex]);
     const yv = yField ? String(row[yIndex]) : "-1";
 
@@ -80,16 +87,6 @@ export function buildMatrix(config: GrammarConfig): MatrixBuildResult {
     y: { data: yValues, ...DEFAULT_MATRIX_CONFIG.Y },
     ...DEFAULT_MATRIX_CONFIG.MATRIX,
   };
-
-  const rawDatasetId = genDatasetId();
-
-  const datasets: any[] = [
-    {
-      id: rawDatasetId,
-      dimensions: rawDS.dimensions,
-      source: rawDS.rows,
-    },
-  ];
 
   const grids: any[] = [];
   const xAxisArr: any[] = [];
@@ -115,8 +112,15 @@ export function buildMatrix(config: GrammarConfig): MatrixBuildResult {
       conditions.push({ field: yField!, value: yv });
     }
 
-    const dsId = genDatasetId();
-    datasets.push(buildFacetTransformDataset(dsId, conditions, rawDatasetId));
+    const dsId = datasetPipeline.addTransform(rawDSId, {
+      type: "filter",
+      config: {
+        and: conditions.map((c) => ({
+          dimension: c.field,
+          "=": c.value,
+        })),
+      },
+    });
 
     // 4. series meta
     seriesMetas.push({
@@ -127,7 +131,6 @@ export function buildMatrix(config: GrammarConfig): MatrixBuildResult {
   }
 
   return {
-    datasets,
     matrix,
     grids,
     xAxisArr,

@@ -1,11 +1,11 @@
 import { GrammarConfig, XYMarkConfig } from "@/core/types";
 import { validateConfig } from "@/core/validator";
 import { resetIds } from "@/core/id-generator";
-import { seriesFactory } from "@/core/series";
-import { buildDataset } from "./dataset-builder";
+import { seriesFactory } from "@/pipeline/series";
 import { buildGrid } from "./grid-builder";
 import { buildAxes } from "./axis-builder";
 import { buildMatrix } from "./matrix-builder";
+import { DataPipeline } from "@/pipeline/dataset/pipeline";
 
 export function compile(config: GrammarConfig): any {
   validateConfig(config);
@@ -20,9 +20,14 @@ export function compile(config: GrammarConfig): any {
 
 function compileFacet(config: GrammarConfig) {
   if (!config.data) throw new Error("facet requires global data");
+  const datasetPipeline = new DataPipeline();
 
-  const { datasets, matrix, grids, xAxisArr, yAxisArr, seriesMetas } =
-    buildMatrix(config);
+  const { matrix, grids, xAxisArr, yAxisArr, seriesMetas } = buildMatrix(
+    config,
+    {
+      datasetPipeline,
+    }
+  );
 
   // 遍历 seriesMetas，为每个 mark 生成 series
   const series: any[] = [];
@@ -51,13 +56,14 @@ function compileFacet(config: GrammarConfig) {
         datasetId: meta.datasetId,
         gridId: meta.gridId,
         axisId,
+        datasetPipeline,
       });
       series.push(...s);
     }
   }
 
   return {
-    dataset: datasets,
+    dataset: datasetPipeline.exportDatasets(),
     matrix,
     grid: grids,
     xAxis: xAxisArr,
@@ -68,13 +74,12 @@ function compileFacet(config: GrammarConfig) {
 }
 
 function compileNonFacet(config: GrammarConfig) {
-  const datasets: any[] = [];
   const series: any[] = [];
   const xAxisArr: any[] = [];
   const yAxisArr: any[] = [];
   const grids: any[] = [];
 
-  const datasetCache = new Map<any, string>();
+  const datasetPipeline = new DataPipeline();
 
   const { id: gridId, grid } = buildGrid();
   grids.push(grid);
@@ -85,17 +90,7 @@ function compileNonFacet(config: GrammarConfig) {
       throw new Error("No data source found for mark");
     }
 
-    let datasetId: string;
-
-    if (datasetCache.has(dataSource)) {
-      datasetId = datasetCache.get(dataSource)!;
-    } else {
-      const built = buildDataset(dataSource);
-      datasetId = built.id;
-      datasetCache.set(dataSource, datasetId);
-      datasets.push(built.dataset);
-    }
-
+    const datasetId = datasetPipeline.createDatasetFromSource(dataSource);
     const strategy = seriesFactory.getStrategy(mark.type);
 
     let axisId: string | undefined;
@@ -114,13 +109,14 @@ function compileNonFacet(config: GrammarConfig) {
       datasetId,
       gridId,
       axisId,
+      datasetPipeline,
     });
 
     series.push(...s);
   }
 
   return {
-    dataset: datasets,
+    dataset: datasetPipeline.exportDatasets(),
     grid: grids,
     series,
     xAxis: xAxisArr,

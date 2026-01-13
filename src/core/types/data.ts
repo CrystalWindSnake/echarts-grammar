@@ -17,8 +17,3 @@ export interface NormalizedDataset {
   dimensions: string[];
   rows: Primitive[][];
 }
-
-export interface DatasetBuildResult {
-  id: string;
-  dataset: any;
-}
