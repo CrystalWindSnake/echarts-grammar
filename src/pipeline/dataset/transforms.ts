@@ -1,7 +1,7 @@
 import { DatasetTransform } from "./types";
 
 /** = > < >= <= */
-export function filterCompare(
+export function filterTransform(
   field: string,
   op: "=" | ">" | "<" | ">=" | "<=",
   value: any

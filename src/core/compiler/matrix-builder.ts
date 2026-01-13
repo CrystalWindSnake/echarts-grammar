@@ -1,6 +1,7 @@
 import { GrammarConfig } from "@/core/types";
 import { genGridId } from "@/core/id-generator";
 import type { DataPipeline } from "@/pipeline/dataset/pipeline";
+import { andTransform, filterTransform } from "@/pipeline/dataset/transforms";
 
 export interface MatrixSeriesMeta {
   gridId: string;
@@ -112,15 +113,10 @@ export function buildMatrix(
       conditions.push({ field: yField!, value: yv });
     }
 
-    const dsId = datasetPipeline.addTransform(rawDSId, {
-      type: "filter",
-      config: {
-        and: conditions.map((c) => ({
-          dimension: c.field,
-          "=": c.value,
-        })),
-      },
-    });
+    const tfs = andTransform(
+      ...conditions.map((c) => filterTransform(c.field, "=", c.value))
+    );
+    const dsId = datasetPipeline.addTransform(rawDSId, tfs);
 
     // 4. series meta
     seriesMetas.push({

@@ -7,6 +7,7 @@ import {
 import { normalizeDataSource } from "./normalizer";
 import { DataSource } from "@/core/types";
 import { Primitive } from "@/core/types/base";
+import { filterTransform } from "./transforms";
 
 export class DataPipeline {
   private idCounter = 0;
@@ -87,18 +88,21 @@ export class DataPipeline {
       groups.get(key)!.push(row);
     }
 
+    const duplicatedDataset: DatasetSource = {
+      id: this.nextDatasetId(),
+      dimensions: baseSource.dimensions,
+      source: [...groups.values()].flat(1),
+    };
+    this.datasets.set(duplicatedDataset.id, duplicatedDataset);
+
     const result = new Map<Primitive, string>();
 
-    for (const [key, rows] of groups.entries()) {
-      const id = this.nextDatasetId();
+    for (const key of groups.keys()) {
+      const id = this.addTransform(
+        duplicatedDataset.id,
+        filterTransform(field, "=", key)
+      );
 
-      const dataset: DatasetSource = {
-        id,
-        dimensions: baseSource.dimensions,
-        source: rows,
-      };
-
-      this.datasets.set(id, dataset);
       result.set(key, id);
     }
 
