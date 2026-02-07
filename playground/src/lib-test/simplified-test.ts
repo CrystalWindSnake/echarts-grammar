@@ -5,11 +5,11 @@ import {
   GridCollector,
   SeriesCollector,
   MatrixCollector,
-} from "echarts-grammar/simplified";
+} from "echarts-grammar/options-builder";
 import {
   filterTransform,
   andTransform,
-} from "echarts-grammar/simplified/builders";
+} from "echarts-grammar/options-builder/builders";
 import { scaleOrdinal } from "d3-scale";
 import { intervalFn } from "@/custom/interval";
 

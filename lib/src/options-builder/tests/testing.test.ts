@@ -4,7 +4,7 @@ import {
   AxisCollector,
   GridCollector,
   SeriesCollector,
-} from "@/simplified";
+} from "@/options-builder";
 
 describe("testing", () => {
   it("anying", () => {

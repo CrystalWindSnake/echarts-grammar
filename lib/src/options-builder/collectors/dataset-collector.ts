@@ -1,5 +1,5 @@
 import { CollectorBase } from "../core/collector-base";
-import { DatasetTransform } from "@/simplified/builders/types";
+import { DatasetTransform } from "@/options-builder/builders/types";
 
 type Dimension = { name: string; type?: string };
 type DataSource = {
