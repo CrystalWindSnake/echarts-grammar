@@ -6,12 +6,15 @@
         "dev": "vite"
     },
     "dependencies": {
+        "d3-scale": "^4.0.2",
         "echarts-grammar": "workspace:*"
     },
     "devDependencies": {
+        "@types/d3-scale": "^4.0.9",
         "@types/node": "^24.10.8",
         "echarts": "^6.0.0",
         "typescript": "~5.9.3",
-        "vite": "^7.3.1"
+        "vite": "^7.3.1",
+        "vite-tsconfig-paths": "^6.0.5"
     }
 }

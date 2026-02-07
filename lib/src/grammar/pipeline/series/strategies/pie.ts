@@ -13,6 +13,7 @@ export class PieSeriesStrategy implements SeriesStrategy {
   }
 
   requireAxis(mark: MarkConfig): mark is XYMarkConfig {
+    mark;
     return false;
   }
 

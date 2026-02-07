@@ -3,7 +3,7 @@ type Scenario = {
   run: () => void;
 };
 
-export const scenarios: Scenario[] = [
+const scenarios: Scenario[] = [
   {
     name: "grammar-test.ts",
     run: () => import("./lib-test/grammar-test").then((m) => m.run()),
@@ -12,4 +12,12 @@ export const scenarios: Scenario[] = [
     name: "drilldown-test.ts",
     run: () => import("./lib-test/drilldown-test").then((m) => m.run()),
   },
+  {
+    name: "simplified-test.ts",
+    run: () => import("./lib-test/simplified-test").then((m) => m.run()),
+  },
 ];
+
+scenarios[scenarios.length - 1].run();
+
+export default scenarios;

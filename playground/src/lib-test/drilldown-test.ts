@@ -49,7 +49,10 @@ export function run() {
       },
     },
     {
-      getOption: (ctx) => opt2,
+      getOption: (ctx) => {
+        console.log("ctx", ctx);
+        return opt2;
+      },
     },
   ]);
 }

@@ -1,4 +1,4 @@
-import { scenarios } from "./scenario-registry";
+import scenarios from "./scenario-registry";
 
 const container = document.getElementById("btns")!;
 

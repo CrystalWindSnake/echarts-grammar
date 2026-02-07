@@ -10,6 +10,14 @@
   "exports": {
     ".": {
       "import": "./dist/index.js"
+    },
+    "./simplified": {
+      "import": "./dist/simplified/index.js",
+      "types": "./dist/simplified/index.d.ts"
+    },
+    "./simplified/builders": {
+      "import": "./dist/simplified/builders/index.js",
+      "types": "./dist/simplified/builders/index.d.ts"
     }
   },
   "scripts": {
