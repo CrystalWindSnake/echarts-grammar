@@ -8,6 +8,9 @@ importers:
 
   lib:
     dependencies:
+      d3-scale:
+        specifier: ^4.0.2
+        version: 4.0.2
       echarts:
         specifier: ^6.0.0
         version: 6.0.0
@@ -15,6 +18,9 @@ importers:
         specifier: ^4.17.21
         version: 4.17.22
     devDependencies:
+      '@types/d3-scale':
+        specifier: ^4.0.9
+        version: 4.0.9
       '@types/lodash-es':
         specifier: ^4.17.12
         version: 4.17.12

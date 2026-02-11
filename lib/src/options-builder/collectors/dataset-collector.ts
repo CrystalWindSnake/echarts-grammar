@@ -1,4 +1,4 @@
-import { CollectorBase } from "../core/collector-base";
+import { CollectorWithIdBase } from "../core/collector-base";
 import { DatasetTransform } from "@/options-builder/builders/types";
 
 type Dimension = { name: string; type?: string };
@@ -23,7 +23,7 @@ type TransformMeta = {
   postProcess: DatasetPostProcess;
 };
 
-export class DatasetCollector extends CollectorBase<DatasetConfig> {
+export class DatasetCollector extends CollectorWithIdBase<DatasetConfig> {
   // key = datasetId
   private transformMeta = new Map<string, TransformMeta>();
 
@@ -31,13 +31,26 @@ export class DatasetCollector extends CollectorBase<DatasetConfig> {
     super("dataset");
   }
 
-  newFromSource(source: any[][]) {
+  newFromMatrixSource(source: any[][]) {
     const first = source[0];
     const rest = source.slice(1);
 
     const dimensions = first.map((value) => ({
       name: value,
     }));
+
+    return this.create(
+      { dimensions, source: rest },
+      (existing) => existing.source === rest,
+    );
+  }
+
+  newFromObjectArraySource(source: object[]) {
+    const dimensions = Object.keys(source[0]).map((key) => ({
+      name: key,
+    }));
+
+    const rest = source.map((obj) => Object.values(obj));
 
     return this.create(
       { dimensions, source: rest },
@@ -169,6 +182,7 @@ export class DatasetCollector extends CollectorBase<DatasetConfig> {
  * DataTable
  * --------------------------- */
 type RowObject = Record<string, any>;
+export type TDataTable = DataTable;
 
 class DataTable {
   private readonly _dimensions: Dimension[];

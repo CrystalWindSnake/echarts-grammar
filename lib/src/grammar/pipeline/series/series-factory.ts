@@ -1,15 +1,9 @@
-import {
-  MarkConfig,
-  SeriesBuildContext,
-  XYMarkConfig,
-} from "@/grammar/core/types";
+import { MarkConfig, SeriesBuildContext } from "@/grammar/core/types";
 
 export interface SeriesStrategy {
   supports(type: MarkConfig["type"]): boolean;
 
-  requireAxis(mark: MarkConfig): mark is XYMarkConfig;
-
-  build(mark: MarkConfig, ctx: SeriesBuildContext): any[];
+  build(ctx: SeriesBuildContext, mark: MarkConfig): void;
 }
 
 class SeriesFactory {

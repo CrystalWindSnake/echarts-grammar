@@ -313,7 +313,7 @@ function exp2() {
 
   const { x: facetX, y: facetY } = facet;
 
-  const { id: dsId } = collectors.datasets.newFromSource(data);
+  const { id: dsId } = collectors.datasets.newFromMatrixSource(data);
   const { id: matrixId } = collectors.matrix.newRaw({
     x: {
       data: getUniqueColumnValues(data, facetX),

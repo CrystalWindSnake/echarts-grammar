@@ -2,7 +2,11 @@ export type Id = string;
 
 export type ReusePredicate<T> = (existing: T) => boolean;
 
-export interface CollectedItem<T> {
+export interface CollectedWithIDItem<T> {
   id: Id;
+  config: T;
+}
+
+export interface CollectedItem<T> {
   config: T;
 }

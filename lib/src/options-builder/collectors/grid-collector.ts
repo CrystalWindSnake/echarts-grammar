@@ -1,4 +1,4 @@
-import { CollectorBase } from "../core/collector-base";
+import { CollectorWithIdBase } from "../core/collector-base";
 import { ReusePredicate } from "../core/types";
 
 export interface GridConfig {
@@ -11,7 +11,7 @@ type GridWithMatrix = GridConfig & {
   coord: [unknown, unknown];
 };
 
-export class GridCollector extends CollectorBase<GridConfig> {
+export class GridCollector extends CollectorWithIdBase<GridConfig> {
   constructor() {
     super("grid");
   }

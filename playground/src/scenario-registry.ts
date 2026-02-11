@@ -18,6 +18,6 @@ const scenarios: Scenario[] = [
   },
 ];
 
-scenarios[scenarios.length - 1].run();
+scenarios[scenarios.length - 3].run();
 
 export default scenarios;

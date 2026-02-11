@@ -20,7 +20,7 @@ describe("testing", () => {
       ["B", 2],
     ];
 
-    const { id: dsId } = datasets.newFromSource(data);
+    const { id: dsId } = datasets.newFromMatrixSource(data);
     const { id: gridId } = grids.newGrid();
 
     const { id: xAxisId } = xAxes.newAxis({

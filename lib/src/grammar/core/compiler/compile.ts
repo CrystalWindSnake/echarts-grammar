@@ -1,15 +1,13 @@
-import { GrammarConfig, XYMarkConfig } from "@/grammar/core/types";
+import { GrammarConfig } from "@/grammar/core/types";
 import { validateConfig } from "@/grammar/core/validator";
-import { resetIds } from "@/grammar/core/id-generator";
 import { seriesFactory } from "@/grammar/pipeline/series";
 import { buildGrid } from "./grid-builder";
-import { buildAxes } from "./axis-builder";
 import { buildMatrix } from "./matrix-builder";
-import { DataPipeline } from "@/grammar/pipeline/dataset/pipeline";
+import { createCollectors } from "@/options-builder/collectors";
+import { buildTransformedDataset } from "./dataset-builder";
 
 export function compile(config: GrammarConfig): any {
   validateConfig(config);
-  resetIds();
 
   if (config.facet) {
     return compileFacet(config);
@@ -19,108 +17,106 @@ export function compile(config: GrammarConfig): any {
 }
 
 function compileFacet(config: GrammarConfig) {
-  if (!config.data) throw new Error("facet requires global data");
-  const datasetPipeline = new DataPipeline();
+  const { data: dataSource } = config;
+  if (!dataSource) throw new Error("facet requires global data");
 
-  const { matrix, grids, xAxisArr, yAxisArr, seriesMetas } = buildMatrix(
-    config,
-    {
-      datasetPipeline,
-    }
-  );
+  const collectors = createCollectors();
+  const { id: dsId } =
+    dataSource.type === "matrix"
+      ? collectors.datasets.newFromMatrixSource(dataSource.data)
+      : collectors.datasets.newFromObjectArraySource(dataSource.data);
 
-  // 遍历 seriesMetas，为每个 mark 生成 series
-  const series: any[] = [];
+  const dataTable = collectors.datasets.getResolvedData(dsId);
 
-  for (const meta of seriesMetas) {
-    for (const m of config.marks) {
-      const sStrategy = seriesFactory.getStrategy(m.type);
+  const { id: matrixId } = buildMatrix(collectors, dataTable, config.facet!);
 
-      // axisId 由 XY mark 决定
-      let axisId = meta.axisId;
-      if (sStrategy.requireAxis(m)) {
-        const xyMark = m as XYMarkConfig;
-        const {
-          xAxis,
-          yAxis,
-          axisId: aId,
-        } = buildAxes(meta.gridId, xyMark.x, xyMark.y);
+  const facetXValues = !!config.facet!.row
+    ? dataTable.column(config.facet!.row, true)
+    : ["-1"];
+  const facetYValues = !!config.facet!.col
+    ? dataTable.column(config.facet!.col, true)
+    : ["-1"];
 
-        axisId = aId;
-        // 避免重复插入 axis
-        if (!xAxisArr.find((a) => a.id === axisId)) xAxisArr.push(xAxis);
-        if (!yAxisArr.find((a) => a.id === axisId)) yAxisArr.push(yAxis);
-      }
-
-      const s = sStrategy.build(m, {
-        datasetId: meta.datasetId,
-        gridId: meta.gridId,
-        axisId,
-        datasetPipeline,
+  for (const row of facetXValues) {
+    for (const col of facetYValues) {
+      const { id: gridId } = buildGrid({
+        collectors,
+        matrixId,
+        row,
+        col,
       });
-      series.push(...s);
+
+      const { id: dsTfId } = buildTransformedDataset({
+        collectors,
+        datasetId: dsId,
+        facetX: config.facet!.row,
+        facetY: config.facet!.col,
+        row,
+        col,
+      });
+
+      for (const mark of config.marks) {
+        const sStrategy = seriesFactory.getStrategy(mark.type);
+        sStrategy.build(
+          {
+            collectors,
+            datasetId: dsTfId,
+            gridId,
+            themeColors: [
+              "#5470c6",
+              "#91cc75",
+              "#fac858",
+              "#ee6666",
+              "#73c0de",
+              "#3ba272",
+              "#fc8452",
+              "#9a60b4",
+              "#ea7ccc",
+            ],
+          },
+          mark,
+        );
+      }
     }
   }
 
-  return {
-    dataset: datasetPipeline.exportDatasets(),
-    matrix,
-    grid: grids,
-    xAxis: xAxisArr,
-    yAxis: yAxisArr,
-    series,
-    ...(config.echarts || {}),
-  };
+  return collectors.exportOptions();
 }
 
 function compileNonFacet(config: GrammarConfig) {
-  const series: any[] = [];
-  const xAxisArr: any[] = [];
-  const yAxisArr: any[] = [];
-  const grids: any[] = [];
+  const { data: dataSource } = config;
+  if (!dataSource) throw new Error("facet requires global data");
 
-  const datasetPipeline = new DataPipeline();
+  const collectors = createCollectors();
+  const { id: dsId } =
+    dataSource.type === "matrix"
+      ? collectors.datasets.newFromMatrixSource(dataSource.data)
+      : collectors.datasets.newFromObjectArraySource(dataSource.data);
 
-  const { id: gridId, grid } = buildGrid();
-  grids.push(grid);
+  const { id: gridId } = collectors.grids.newGrid();
 
   for (const mark of config.marks) {
-    const dataSource = mark.data || config.data;
-    if (!dataSource) {
-      throw new Error("No data source found for mark");
-    }
-
-    const datasetId = datasetPipeline.createDatasetFromSource(dataSource);
-    const strategy = seriesFactory.getStrategy(mark.type);
-
-    let axisId: string | undefined;
-
-    if (strategy.requireAxis(mark)) {
-      const { xAxis, yAxis, axisId: aId } = buildAxes(gridId, mark.x, mark.y);
-      axisId = aId;
-
-      if (!xAxisArr.find((a) => a.id === axisId)) {
-        xAxisArr.push(xAxis);
-        yAxisArr.push(yAxis);
-      }
-    }
-
-    const s = strategy.build(mark as any, {
-      datasetId,
-      gridId,
-      axisId,
-      datasetPipeline,
-    });
-
-    series.push(...s);
+    const sStrategy = seriesFactory.getStrategy(mark.type);
+    sStrategy.build(
+      {
+        collectors,
+        datasetId: dsId,
+        gridId,
+        themeColors: [
+          "#5470c6",
+          "#91cc75",
+          "#fac858",
+          "#ee6666",
+          "#73c0de",
+          "#3ba272",
+          "#fc8452",
+          "#9a60b4",
+          "#ea7ccc",
+        ],
+      },
+      mark,
+    );
   }
 
-  return {
-    dataset: datasetPipeline.exportDatasets(),
-    grid: grids,
-    series,
-    xAxis: xAxisArr,
-    yAxis: yAxisArr,
-    ...(config.echarts || {}),
-  };
+  return collectors.exportOptions();
 }

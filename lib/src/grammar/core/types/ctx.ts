@@ -1,8 +1,8 @@
-import type { DataPipeline } from "@/grammar/pipeline/dataset/pipeline";
+import { TCollectors } from "@/options-builder/collectors";
 
 export interface SeriesBuildContext {
+  collectors: TCollectors;
+  gridId: string;
   datasetId: string;
-  gridId?: string;
-  axisId?: string;
-  datasetPipeline: DataPipeline;
+  themeColors: string[];
 }

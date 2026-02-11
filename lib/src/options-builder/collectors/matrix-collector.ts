@@ -1,4 +1,4 @@
-import { CollectorBase } from "../core/collector-base";
+import { CollectorWithIdBase } from "../core/collector-base";
 
 export interface MatrixConfig {
   x?: {
@@ -12,7 +12,7 @@ export interface MatrixConfig {
   [key: string]: unknown;
 }
 
-export class MatrixCollector extends CollectorBase<MatrixConfig> {
+export class MatrixCollector extends CollectorWithIdBase<MatrixConfig> {
   constructor() {
     super("matrix");
   }
@@ -21,8 +21,16 @@ export class MatrixCollector extends CollectorBase<MatrixConfig> {
     const { data: xData = ["-1"] } = config.x ?? {};
     const { data: yData = ["-1"] } = config.y ?? {};
 
-    const x = { ...config.x, data: xData } as MatrixConfig["x"];
-    const y = { ...config.y, data: yData } as MatrixConfig["y"];
+    const x = {
+      ...config.x,
+      data: xData,
+      show: !!config.x,
+    } as MatrixConfig["x"];
+    const y = {
+      ...config.y,
+      data: yData,
+      show: !!config.y,
+    } as MatrixConfig["y"];
     return this.create({ ...config, x, y });
   }
 

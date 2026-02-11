@@ -4,6 +4,7 @@ export interface BaseMarkConfig {
   id?: string;
   data?: DataSource;
   options?: Record<string, any>;
+  axisShard?: boolean;
 }
 
 export interface BarMarkConfig extends BaseMarkConfig {
@@ -13,6 +14,8 @@ export interface BarMarkConfig extends BaseMarkConfig {
   color?: string;
   tooltip?: string | string[];
   label?: string | string[];
+  stack?: boolean;
+  transpose?: boolean;
 }
 
 export interface LineMarkConfig extends BaseMarkConfig {

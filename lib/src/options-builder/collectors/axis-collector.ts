@@ -1,4 +1,4 @@
-import { CollectorBase } from "../core/collector-base";
+import { CollectorWithIdBase } from "../core/collector-base";
 import { ReusePredicate } from "../core/types";
 
 export interface AxisConfig {
@@ -8,7 +8,7 @@ export interface AxisConfig {
   [key: string]: unknown;
 }
 
-export class AxisCollector extends CollectorBase<AxisConfig> {
+export class AxisCollector extends CollectorWithIdBase<AxisConfig> {
   constructor(prefix: "x-axis" | "y-axis") {
     super(prefix);
   }

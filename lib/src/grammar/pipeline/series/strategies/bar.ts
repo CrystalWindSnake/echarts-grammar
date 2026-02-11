@@ -1,4 +1,4 @@
-import { genSeriesId } from "@/grammar/core/id-generator";
+import { scaleOrdinal } from "d3-scale";
 import { SeriesStrategy } from "../series-factory";
 import {
   BarMarkConfig,
@@ -6,64 +6,118 @@ import {
   SeriesBuildContext,
   XYMarkConfig,
 } from "@/grammar/core/types";
+import { filterTransform } from "@/options-builder/builders";
+import * as common from "./common";
+
+const SERIES_TYPE = "bar";
 
 export class BarSeriesStrategy implements SeriesStrategy {
   supports(type: MarkConfig["type"]) {
     return type === "bar";
   }
 
-  requireAxis(mark: MarkConfig): mark is XYMarkConfig {
-    return mark.type === "bar";
-  }
+  build(ctx: SeriesBuildContext, mark: BarMarkConfig) {
+    const { collectors, gridId, datasetId, themeColors } = ctx;
+    const {
+      axisShard = true,
+      x: markX = "x",
+      y: markY = "y",
+      color,
+      tooltip,
+      stack,
+      transpose = false,
+    } = mark;
 
-  build(mark: BarMarkConfig, ctx: SeriesBuildContext): any[] {
-    if (!mark.color) {
-      return [this.buildSingle(mark, ctx.datasetId, ctx)];
-    }
+    const x = transpose ? markY : markX;
+    const y = transpose ? markX : markY;
 
-    const series: any[] = [];
-    const grouped = ctx.datasetPipeline.groupByDistinct(
-      ctx.datasetId,
-      mark.color
-    );
+    const encodeTooltip = common.encodeTooltip(tooltip);
 
-    for (const [colorValue, datasetId] of grouped.entries()) {
-      series.push(this.buildSingle(mark, datasetId, ctx, String(colorValue)));
-    }
+    const { id: xAxisId } = transpose
+      ? common.newXValueAxis({
+          axisCollector: collectors.xAxis,
+          gridId,
+          axisShard,
+          x,
+        })
+      : common.newXCategoryAxis({
+          axisCollector: collectors.xAxis,
+          gridId,
+          axisShard,
+          x,
+        });
 
-    return series;
-  }
+    const { id: yAxisId } = transpose
+      ? common.newYCategoryAxis({
+          axisCollector: collectors.yAxis,
+          gridId,
+          axisShard,
+          y,
+        })
+      : common.newYValueAxis({
+          axisCollector: collectors.yAxis,
+          gridId,
+          axisShard,
+          y,
+        });
 
-  private buildSingle(
-    mark: BarMarkConfig,
-    datasetId: string,
-    ctx: SeriesBuildContext,
-    name?: string
-  ) {
-    const labelConfig = mark.label
-      ? {
-          label: {
-            show: true,
-            position: "insideTop",
+    if (color) {
+      const source = collectors.datasets.getResolvedData(datasetId);
+      const colorScale = scaleOrdinal(themeColors);
+      const colorValues = source.column(color, true);
+
+      for (const [index, colorValue] of colorValues.entries()) {
+        const paletteColor = colorScale(colorValue);
+
+        const { id: dsTfId } = collectors.datasets.newFromTransform(
+          datasetId,
+          filterTransform(color, "=", colorValue),
+        );
+
+        const itemPayload = {
+          colorCount: colorValues.length,
+          colorIndex: index,
+        };
+
+        collectors.series.newCartesianSeries(
+          { datasetId: dsTfId, xAxisId, yAxisId },
+          {
+            type: SERIES_TYPE,
+            name: colorValue,
+            stack,
+            encode: {
+              x,
+              y,
+              ...encodeTooltip,
+            },
+            itemStyle: { color: paletteColor },
+            itemPayload,
           },
-        }
-      : undefined;
+        );
 
-    return {
-      id: genSeriesId(),
-      name,
-      type: mark.type,
-      datasetId,
-      xAxisId: ctx.axisId,
-      yAxisId: ctx.axisId,
-      ...labelConfig,
-      encode: {
-        x: mark.x || "x",
-        y: mark.y || "y",
-        ...(mark.tooltip && { tooltip: mark.tooltip }),
-        ...(mark.label && { label: mark.label }),
-      },
-      ...(mark.options || {}),
-    };
+        collectors.legends.newLegend({});
+        collectors.tooltip.newTooltip({
+          trigger: "axis",
+          axisPointer: {
+            type: "shadow",
+          },
+        });
+      }
+    } else {
+      collectors.series.newCartesianSeries(
+        { datasetId, xAxisId, yAxisId },
+        {
+          type: SERIES_TYPE,
+          name: x,
+          stack,
+          encode: {
+            x,
+            y,
+            ...encodeTooltip,
+          },
+          color: themeColors,
+        },
+      );
+    }
   }
 }

@@ -1,34 +1,29 @@
-import { genSeriesId } from "@/grammar/core/id-generator";
 import { SeriesStrategy } from "../series-factory";
 import {
   MarkConfig,
   PieMarkConfig,
   SeriesBuildContext,
-  XYMarkConfig,
 } from "@/grammar/core/types";
+
+const SERIES_TYPE = "bar";
 
 export class PieSeriesStrategy implements SeriesStrategy {
   supports(type: MarkConfig["type"]) {
-    return type === "pie";
+    return type === SERIES_TYPE;
   }
 
-  requireAxis(mark: MarkConfig): mark is XYMarkConfig {
-    mark;
-    return false;
-  }
+  build(ctx: SeriesBuildContext, mark: PieMarkConfig) {
+    const { collectors, datasetId, themeColors } = ctx;
 
-  build(mark: PieMarkConfig, ctx: SeriesBuildContext): any[] {
-    return [
-      {
-        id: genSeriesId(),
-        type: "pie",
-        datasetId: ctx.datasetId,
-        encode: {
-          value: mark.angle || "value",
-          itemName: mark.category || "name",
-        },
-        ...(mark.options || {}),
+    collectors.series.newSeries({
+      type: SERIES_TYPE,
+      datasetId,
+      encode: {
+        value: mark.angle || "value",
+        itemName: mark.category || "name",
       },
-    ];
+      itemStyle: { color: themeColors },
+      ...(mark.options || {}),
+    });
   }
 }

@@ -1,4 +1,4 @@
-import { CollectorBase } from "../core/collector-base";
+import { CollectorWithIdBase } from "../core/collector-base";
 
 type CartesianRequired = {
   xAxisId: string;
@@ -7,9 +7,9 @@ type CartesianRequired = {
 };
 
 type CartesianConfig = { type: string } & { [key: string]: unknown };
-type SeriesConfig = CartesianRequired & CartesianConfig;
+type SeriesConfig = Record<string, unknown>;
 
-export class SeriesCollector extends CollectorBase<SeriesConfig> {
+export class SeriesCollector extends CollectorWithIdBase<SeriesConfig> {
   constructor() {
     super("series");
   }
