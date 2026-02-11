@@ -37,8 +37,8 @@ function compileFacet(config: GrammarConfig) {
     ? dataTable.column(config.facet!.col, true)
     : ["-1"];
 
-  for (const row of facetXValues) {
-    for (const col of facetYValues) {
+  for (const [rowIndex, row] of facetXValues.entries()) {
+    for (const [colIndex, col] of facetYValues) {
       const { id: gridId } = buildGrid({
         collectors,
         matrixId,
@@ -54,6 +54,11 @@ function compileFacet(config: GrammarConfig) {
         row,
         col,
       });
+
+      const matrixCtx = {
+        rowIndex,
+        colIndex,
+      };
 
       for (const mark of config.marks) {
         const sStrategy = seriesFactory.getStrategy(mark.type);
@@ -73,6 +78,7 @@ function compileFacet(config: GrammarConfig) {
               "#9a60b4",
               "#ea7ccc",
             ],
+            matrixCtx,
           },
           mark,
         );

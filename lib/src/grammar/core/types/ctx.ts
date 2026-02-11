@@ -5,4 +5,8 @@ export interface SeriesBuildContext {
   gridId: string;
   datasetId: string;
   themeColors: string[];
+  matrixCtx?: {
+    rowIndex: number;
+    colIndex: number;
+  };
 }

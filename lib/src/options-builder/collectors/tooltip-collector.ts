@@ -1,14 +1,20 @@
-import { CollectorBase } from "../core/collector-base";
+import { SingleItemCollectorBase } from "../core/collector-base";
 
 export interface TooltipConfig {}
 
-export class TooltipCollector extends CollectorBase<TooltipConfig> {
-  newTooltip(config: TooltipConfig) {
+export class TooltipCollector extends SingleItemCollectorBase<TooltipConfig> {
+  newTooltip(config: TooltipConfig, settings: { convert?: boolean } = {}) {
+    const { convert = false } = settings;
+
+    if (!!this.item && !convert) {
+      return this.item;
+    }
+
     return this.create(config);
   }
 
   exportTooltip() {
-    if (this.items.length === 0) {
+    if (!this.item) {
       return undefined;
     }
 

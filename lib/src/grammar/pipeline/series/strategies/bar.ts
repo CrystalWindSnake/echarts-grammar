@@ -17,7 +17,7 @@ export class BarSeriesStrategy implements SeriesStrategy {
   }
 
   build(ctx: SeriesBuildContext, mark: BarMarkConfig) {
-    const { collectors, gridId, datasetId, themeColors } = ctx;
+    const { collectors, gridId, datasetId, themeColors, matrixCtx } = ctx;
     const {
       axisShard = true,
       x: markX = "x",
@@ -39,12 +39,14 @@ export class BarSeriesStrategy implements SeriesStrategy {
           gridId,
           axisShard,
           x,
+          matrixCtx,
         })
       : common.newXCategoryAxis({
           axisCollector: collectors.xAxis,
           gridId,
           axisShard,
           x,
+          matrixCtx,
         });
 
     const { id: yAxisId } = transpose
@@ -53,12 +55,14 @@ export class BarSeriesStrategy implements SeriesStrategy {
           gridId,
           axisShard,
           y,
+          matrixCtx,
         })
       : common.newYValueAxis({
           axisCollector: collectors.yAxis,
           gridId,
           axisShard,
           y,
+          matrixCtx,
         });
 
     if (color) {
@@ -95,7 +99,7 @@ export class BarSeriesStrategy implements SeriesStrategy {
           },
         );
 
-        collectors.legends.newLegend({});
+        collectors.legends.defaultLegend({});
         collectors.tooltip.newTooltip({
           trigger: "axis",
           axisPointer: {

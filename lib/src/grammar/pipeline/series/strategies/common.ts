@@ -1,3 +1,4 @@
+import { SeriesBuildContext } from "@/grammar/core/types";
 import { AxisCollector } from "@/options-builder";
 
 export function newXCategoryAxis(ctx: {
@@ -5,6 +6,7 @@ export function newXCategoryAxis(ctx: {
   gridId: string;
   axisShard: boolean;
   x: string;
+  matrixCtx: SeriesBuildContext["matrixCtx"];
 }) {
   const { axisCollector, gridId, axisShard, x } = ctx;
 
@@ -24,6 +26,7 @@ export function newXValueAxis(ctx: {
   gridId: string;
   axisShard: boolean;
   x: string;
+  matrixCtx: SeriesBuildContext["matrixCtx"];
 }) {
   const { axisCollector, gridId, axisShard, x } = ctx;
 
@@ -43,6 +46,7 @@ export function newYCategoryAxis(ctx: {
   gridId: string;
   axisShard: boolean;
   y: string;
+  matrixCtx: SeriesBuildContext["matrixCtx"];
 }) {
   const { axisCollector, gridId, axisShard, y } = ctx;
 
@@ -62,6 +66,7 @@ export function newYValueAxis(ctx: {
   gridId: string;
   axisShard: boolean;
   y: string;
+  matrixCtx: SeriesBuildContext["matrixCtx"];
 }) {
   const { axisCollector, gridId, axisShard, y } = ctx;
 

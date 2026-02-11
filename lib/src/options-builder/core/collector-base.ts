@@ -50,3 +50,17 @@ export abstract class CollectorBase<TConfig> {
     return this.items.map((i) => i.config);
   }
 }
+
+export abstract class SingleItemCollectorBase<TConfig = Record<string, any>> {
+  protected item: TConfig | undefined = undefined;
+
+  protected create(config: TConfig): TConfig {
+    const item = { ...config };
+    this.item = item;
+    return item;
+  }
+
+  export(): TConfig | undefined {
+    return this.item;
+  }
+}
